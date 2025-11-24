@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import { Button, Card } from '@/components/ui';
 
 export default function Home() {

@@ -2,7 +2,29 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and configure:
+
+```bash
+cp .env.example .env.local
+```
+
+**Environment Variables:**
+
+- `NODE_ENV` - Node environment (default: `development`, enables Redux DevTools)
+- `PORT` - Frontend port (default: `3001`)
+- `NEXT_PUBLIC_API_BASE_URL` - Backend API base URL (default: `http://localhost:8080`)
+
+**Example:**
+
+```env
+NODE_ENV=development
+PORT=3001
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
+### Run Development Server
 
 ```bash
 npm run dev
@@ -14,7 +36,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

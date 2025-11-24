@@ -1,31 +1,25 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { tasksApi } from '@/lib/api';
-import type { Task, CreateTaskData, UpdateTaskData } from '@/types';
-import { ERRORS } from '@/lib/constants';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
-interface TaskState {
-  items: Task[];
-  loading: boolean;
-  error: string | null;
-}
+import { ERRORS } from '@/constants';
+import { tasksApi } from '@/services';
+
+import type { RootState } from '../../index';
+import { handleFulfilled, handlePending, handleRejected } from '../../utils/reducers';
+import { getAccessToken, hasAccessToken } from '../../utils/thunk';
+import type { CreateTaskPayload, TaskState, UpdateTaskPayload } from './types';
 
 const initialState: TaskState = {
   items: [],
   loading: false,
-  error: null,
-};
-
-const getAccessToken = (getState: () => unknown): string | null => {
-  const state = getState() as { auth: { accessToken: string | null } };
-  return state.auth.accessToken;
+  error: '',
 };
 
 export const fetchTasks = createAsyncThunk(
   'tasks/fetchTasks',
   async (_, { getState, rejectWithValue }) => {
     try {
-      const accessToken = getAccessToken(getState);
-      if (!accessToken) {
+      const accessToken = getAccessToken(getState as () => RootState);
+      if (!hasAccessToken(getState as () => RootState)) {
         return rejectWithValue(ERRORS.UNAUTHORIZED);
       }
       const tasks = await tasksApi.getAll(accessToken);
@@ -38,10 +32,10 @@ export const fetchTasks = createAsyncThunk(
 
 export const createTask = createAsyncThunk(
   'tasks/createTask',
-  async (data: CreateTaskData, { getState, rejectWithValue }) => {
+  async (data: CreateTaskPayload, { getState, rejectWithValue }) => {
     try {
-      const accessToken = getAccessToken(getState);
-      if (!accessToken) {
+      const accessToken = getAccessToken(getState as () => RootState);
+      if (!hasAccessToken(getState as () => RootState)) {
         return rejectWithValue(ERRORS.UNAUTHORIZED);
       }
       const task = await tasksApi.create(data, accessToken);
@@ -54,10 +48,10 @@ export const createTask = createAsyncThunk(
 
 export const updateTask = createAsyncThunk(
   'tasks/updateTask',
-  async ({ id, data }: { id: string; data: UpdateTaskData }, { getState, rejectWithValue }) => {
+  async ({ id, data }: UpdateTaskPayload, { getState, rejectWithValue }) => {
     try {
-      const accessToken = getAccessToken(getState);
-      if (!accessToken) {
+      const accessToken = getAccessToken(getState as () => RootState);
+      if (!hasAccessToken(getState as () => RootState)) {
         return rejectWithValue(ERRORS.UNAUTHORIZED);
       }
       const task = await tasksApi.update(id, data, accessToken);
@@ -72,8 +66,8 @@ export const deleteTask = createAsyncThunk(
   'tasks/deleteTask',
   async (id: string, { getState, rejectWithValue }) => {
     try {
-      const accessToken = getAccessToken(getState);
-      if (!accessToken) {
+      const accessToken = getAccessToken(getState as () => RootState);
+      if (!hasAccessToken(getState as () => RootState)) {
         return rejectWithValue(ERRORS.UNAUTHORIZED);
       }
       await tasksApi.delete(id, accessToken);
@@ -89,64 +83,48 @@ const taskSlice = createSlice({
   initialState,
   reducers: {
     clearError: (state) => {
-      state.error = null;
+      state.error = '';
     },
   },
   extraReducers: (builder) => {
     builder
       // fetchTasks
-      .addCase(fetchTasks.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(fetchTasks.pending, handlePending)
       .addCase(fetchTasks.fulfilled, (state, action) => {
-        state.loading = false;
+        handleFulfilled(state);
         state.items = action.payload;
       })
       .addCase(fetchTasks.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as string) || ERRORS.LOAD_TASKS;
+        handleRejected(state, action, ERRORS.LOAD_TASKS);
       })
       // createTask
-      .addCase(createTask.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(createTask.pending, handlePending)
       .addCase(createTask.fulfilled, (state, action) => {
-        state.loading = false;
+        handleFulfilled(state);
         state.items = [action.payload, ...state.items];
       })
       .addCase(createTask.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as string) || ERRORS.CREATE_TASK;
+        handleRejected(state, action, ERRORS.CREATE_TASK);
       })
       // updateTask
-      .addCase(updateTask.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(updateTask.pending, handlePending)
       .addCase(updateTask.fulfilled, (state, action) => {
-        state.loading = false;
+        handleFulfilled(state);
         state.items = state.items.map((task) =>
           task.id === action.payload.id ? action.payload : task,
         );
       })
       .addCase(updateTask.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as string) || ERRORS.UPDATE_TASK;
+        handleRejected(state, action, ERRORS.UPDATE_TASK);
       })
       // deleteTask
-      .addCase(deleteTask.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(deleteTask.pending, handlePending)
       .addCase(deleteTask.fulfilled, (state, action) => {
-        state.loading = false;
+        handleFulfilled(state);
         state.items = state.items.filter((task) => task.id !== action.payload);
       })
       .addCase(deleteTask.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as string) || ERRORS.DELETE_TASK;
+        handleRejected(state, action, ERRORS.DELETE_TASK);
       });
   },
 });

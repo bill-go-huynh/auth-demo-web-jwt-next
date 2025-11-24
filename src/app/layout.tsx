@@ -1,9 +1,12 @@
+import { Toaster } from 'react-hot-toast';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import { StoreProvider } from '@/components/StoreProvider';
+
 import { Header } from '@/components/Header';
+import { StoreProvider } from '@/components/StoreProvider';
+import { ThemeProvider } from '@/contexts/theme';
+
+import './globals.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -36,6 +39,28 @@ export default function RootLayout({
               <Header />
               <main className="flex-1">{children}</main>
             </div>
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: 'var(--toast-bg, #fff)',
+                  color: 'var(--toast-color, #333)',
+                },
+                success: {
+                  iconTheme: {
+                    primary: '#10b981',
+                    secondary: '#fff',
+                  },
+                },
+                error: {
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#fff',
+                  },
+                },
+              }}
+            />
           </ThemeProvider>
         </StoreProvider>
       </body>

@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAppDispatch } from '@/store/hooks';
-import { setTokens, fetchMe } from '@/store/authSlice';
-import { MESSAGES, ERRORS } from '@/lib/constants';
 
-export default function OAuthCallbackPage() {
+import { ERRORS, MESSAGES } from '@/constants';
+import { fetchMe, setTokens } from '@/store/features/auth';
+import { useAppDispatch } from '@/store/hooks';
+
+function OAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
@@ -14,10 +16,9 @@ export default function OAuthCallbackPage() {
   useEffect(() => {
     const urlError = searchParams.get('error');
     if (urlError) {
-      const timeoutId = setTimeout(() => {
-        router.push(`/login?error=${ERRORS.AUTH_FAILED}`);
-      }, 2000);
-      return () => clearTimeout(timeoutId);
+      toast.error(ERRORS.AUTH_FAILED);
+      router.replace('/login');
+      return;
     }
 
     const accessToken = searchParams.get('accessToken');
@@ -28,21 +29,26 @@ export default function OAuthCallbackPage() {
       dispatch(fetchMe())
         .unwrap()
         .then(() => {
-          router.push('/tasks');
+          toast.success(MESSAGES.LOGIN_SUCCESS);
+          router.replace('/tasks');
         })
         .catch(() => {
-          router.push(`/login?error=${ERRORS.AUTH_FAILED}`);
+          toast.error(ERRORS.AUTH_FAILED);
+          router.replace('/login');
         });
     } else {
-      router.push(`/login?error=${ERRORS.AUTH_FAILED}`);
+      toast.error(ERRORS.AUTH_FAILED);
+      router.replace('/login');
     }
   }, [searchParams, router, dispatch]);
 
+  return null;
+}
+
+export default function OAuthCallbackPage() {
   return (
-    <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center">
-        <p className="text-lg">{MESSAGES.COMPLETING_AUTH}</p>
-      </div>
-    </div>
+    <Suspense fallback={null}>
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }
