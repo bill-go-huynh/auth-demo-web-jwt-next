@@ -62,10 +62,7 @@ export function Header() {
 
             <Button
               variant="ghost"
-              onClick={() => {
-                console.log('[Header] Theme button clicked, current theme:', theme);
-                toggleTheme();
-              }}
+              onClick={toggleTheme}
               aria-label="Toggle theme"
               suppressHydrationWarning
             >
