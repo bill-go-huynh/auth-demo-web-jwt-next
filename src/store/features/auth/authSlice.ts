@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { type Action, createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { ERRORS } from '@/constants';
 import { authApi } from '@/services';
@@ -90,7 +90,11 @@ const authSlice = createSlice({
         state.refreshToken = action.payload.refreshToken || null;
       })
       .addCase(loginWithPassword.rejected, (state, action) => {
-        handleRejected(state, action, ERRORS.LOGIN_FAILED);
+        handleRejected(
+          state,
+          action as Action<string> & { payload?: unknown },
+          ERRORS.LOGIN_FAILED,
+        );
       })
       // fetchMe
       .addCase(fetchMe.pending, handlePending)
@@ -99,7 +103,11 @@ const authSlice = createSlice({
         state.user = action.payload;
       })
       .addCase(fetchMe.rejected, (state, action) => {
-        handleRejected(state, action, ERRORS.UNAUTHORIZED);
+        handleRejected(
+          state,
+          action as Action<string> & { payload?: unknown },
+          ERRORS.UNAUTHORIZED,
+        );
         state.accessToken = null;
         state.refreshToken = null;
         state.user = null;
@@ -114,7 +122,11 @@ const authSlice = createSlice({
         }
       })
       .addCase(refreshAccessToken.rejected, (state, action) => {
-        handleRejected(state, action, ERRORS.UNAUTHORIZED);
+        handleRejected(
+          state,
+          action as Action<string> & { payload?: unknown },
+          ERRORS.UNAUTHORIZED,
+        );
         state.accessToken = null;
         state.refreshToken = null;
         state.user = null;

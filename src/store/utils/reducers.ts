@@ -5,12 +5,7 @@ export interface AsyncState {
   error: string;
 }
 
-type RejectedPayload = string | Error;
-
-const extractErrorMessage = (
-  payload: RejectedPayload | undefined,
-  defaultError: string,
-): string => {
+const extractErrorMessage = (payload: unknown, defaultError: string): string => {
   if (!payload) return defaultError;
   if (typeof payload === 'string') return payload;
   if (payload instanceof Error) return payload.message;
@@ -24,7 +19,7 @@ export const handlePending = <T extends AsyncState>(state: T): void => {
 
 export const handleRejected = <T extends AsyncState>(
   state: T,
-  action: Action<string> & { payload?: RejectedPayload },
+  action: Action<string> & { payload?: unknown },
   defaultError: string,
 ): void => {
   state.loading = false;

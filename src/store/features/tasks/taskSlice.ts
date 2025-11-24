@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { type Action, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import { ERRORS } from '@/constants';
 import { tasksApi } from '@/services';
@@ -95,7 +95,7 @@ const taskSlice = createSlice({
         state.items = action.payload;
       })
       .addCase(fetchTasks.rejected, (state, action) => {
-        handleRejected(state, action, ERRORS.LOAD_TASKS);
+        handleRejected(state, action as Action<string> & { payload?: unknown }, ERRORS.LOAD_TASKS);
       })
       // createTask
       .addCase(createTask.pending, handlePending)
@@ -104,7 +104,7 @@ const taskSlice = createSlice({
         state.items = [action.payload, ...state.items];
       })
       .addCase(createTask.rejected, (state, action) => {
-        handleRejected(state, action, ERRORS.CREATE_TASK);
+        handleRejected(state, action as Action<string> & { payload?: unknown }, ERRORS.CREATE_TASK);
       })
       // updateTask
       .addCase(updateTask.pending, handlePending)
@@ -115,7 +115,7 @@ const taskSlice = createSlice({
         );
       })
       .addCase(updateTask.rejected, (state, action) => {
-        handleRejected(state, action, ERRORS.UPDATE_TASK);
+        handleRejected(state, action as Action<string> & { payload?: unknown }, ERRORS.UPDATE_TASK);
       })
       // deleteTask
       .addCase(deleteTask.pending, handlePending)
@@ -124,7 +124,7 @@ const taskSlice = createSlice({
         state.items = state.items.filter((task) => task.id !== action.payload);
       })
       .addCase(deleteTask.rejected, (state, action) => {
-        handleRejected(state, action, ERRORS.DELETE_TASK);
+        handleRejected(state, action as Action<string> & { payload?: unknown }, ERRORS.DELETE_TASK);
       });
   },
 });
